@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <title>旗幟與地標百萬富翁 | Flag and Landmark Millionaire</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            color: white;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+        #container {
+            max-width: 800px;
+            width: 95%;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            border-radius: 12px;
+            margin: 10px;
+        }
+        #start-page, #game-page, #end-page {
+            display: none;
+        }
+        #start-page.active, #game-page.active, #end-page.active {
+            display: block;
+        }
+        h1 {
+            color: #ffcc00;
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+        }
+        #question {
+            font-size: 1.8rem;
+            margin: 20px 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            line-height: 1.4;
+        }
+        #image {
+            max-width: 100%;
+            max-height: 250px;
+            margin-bottom: 20px;
+            border: 3px solid #ffcc00;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+            object-fit: contain;
+        }
+        .options-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .option {
+            padding: 20px 15px;
+            background: linear-gradient(to bottom, #007bff, #0056b3);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.4rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            word-break: break-word;
+        }
+        .option:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.4);
+        }
+        .option.correct {
+            background: linear-gradient(to bottom, #28a745, #1e7e34);
+        }
+        .option.incorrect {
+            background: linear-gradient(to bottom, #dc3545, #c82333);
+        }
+        .option.disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        #score {
+            font-size: 1.8rem;
+            margin: 20px 0;
+            color: #ffcc00;
+        }
+        .lifelines {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .lifeline {
+            padding: 15px 25px;
+            background: linear-gradient(to bottom, #28a745, #1e7e34);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            min-width: 140px;
+        }
+        .lifeline:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .lifeline:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.4);
+        }
+        .lifeline.used {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        #audience-result, #phone-result {
+            margin: 20px 0;
+            font-size: 1.4rem;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .level-indicator {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .level {
+            width: 40px;
+            height: 40px;
+            background-color: #6c757d;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 1.2rem;
+        }
+        .level.active {
+            background-color: #ffcc00;
+            color: black;
+        }
+        .level.completed {
+            background-color: #28a745;
+        }
+        button {
+            padding: 18px 30px;
+            background: linear-gradient(to bottom, #ffcc00, #e6b800);
+            color: #333;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            min-width: 200px;
+        }
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.4);
+        }
+        #replay {
+            margin-top: 20px;
+        }
+        #timer {
+            font-size: 1.6rem;
+            color: #ffcc00;
+            margin-bottom: 10px;
+        }
+        #high-scores {
+            margin-top: 20px;
+            font-size: 1.4rem;
+        }
+        select {
+            margin-bottom: 20px;
+            padding: 15px;
+            font-size: 1.4rem;
+            border-radius: 12px;
+            background-color: #333;
+            color: white;
+            border: 2px solid #ffcc00;
+            width: 100%;
+            max-width: 300px;
+        }
+        .language-selector {
+            margin: 15px 0;
+        }
+        .language-label {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+        #name-input {
+            margin: 20px 0;
+            padding: 15px;
+            font-size: 1.4rem;
+            border-radius: 12px;
+            background-color: #333;
+            color: white;
+            border: 2px solid #ffcc00;
+            width: 100%;
+            max-width: 300px;
+        }
+        #submit-name {
+            margin-left: 10px;
+            min-width: 150px;
+        }
+        #player-stats {
+            margin: 15px 0;
+            font-size: 1.4rem;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .time-display {
+            font-size: 1.4rem;
+            margin: 10px 0;
+            color: #ffcc00;
+        }
+        
+        /* iPad-specific optimizations */
+        @media (max-width: 1024px) and (min-width: 768px) {
+            #container {
+                width: 90%;
+                max-width: 700px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            #question {
+                font-size: 1.6rem;
+            }
+            
+            .option {
+                font-size: 1.2rem;
+                padding: 18px 12px;
+                min-height: 70px;
+            }
+            
+            .lifeline {
+                font-size: 1.1rem;
+                padding: 12px 20px;
+                min-width: 120px;
+            }
+            
+            button {
+                font-size: 1.3rem;
+                padding: 15px 25px;
+                min-width: 180px;
+            }
+            
+            #image {
+                max-height: 220px;
+            }
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 767px) {
+            #container {
+                padding: 15px;
+                width: 98%;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            #question {
+                font-size: 1.3rem;
+            }
+            
+            .options-container {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .option {
+                font-size: 1.1rem;
+                padding: 15px 10px;
+                min-height: 60px;
+            }
+            
+            .lifelines {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .lifeline {
+                width: 100%;
+                max-width: 250px;
+            }
+            
+            button {
+                font-size: 1.2rem;
+                padding: 12px 20px;
+                min-width: 160px;
+            }
+            
+            #image {
+                max-height: 180px;
+            }
+            
+            .level {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
+            }
+        }
+        
+        /* Very small screens */
+        @media (max-width: 350px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            #question {
+                font-size: 1.1rem;
+            }
+            
+            .option {
+                font-size: 1rem;
+                padding: 12px 8px;
+            }
+            
+            button {
+                font-size: 1rem;
+                padding: 10px 15px;
+                min-width: 140px;
+            }
+        }
+        
+        /* Orientation-specific adjustments */
+        @media (max-height: 600px) and (orientation: landscape) {
+            #container {
+                padding: 10px;
+                max-height: 95vh;
+                overflow-y: auto;
+            }
+            
+            #image {
+                max-height: 150px;
+            }
+            
+            .options-container {
+                gap: 8px;
+            }
+            
+            .option {
+                min-height: 50px;
+                padding: 10px 8px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="start-page" class="active">
+            <h1 id="title">Flag and Landmark Millionaire</h1>
+            <p id="desc1">Test your knowledge of flags and landmarks!</p>
+            <p id="desc2">Answer questions correctly to climb the money ladder and win up to 1,000,000 points!</p>
+            
+            <div class="language-selector">
+                <span class="language-label">Language / 語言:</span>
+                <select id="language">
+                    <option value="en">English</option>
+                    <option value="zh">中文</option>
+                </select>
+            </div>
+            
+            <button id="start">Start Game</button>
+        </div>
+        
+        <div id="game-page">
+            <h1 id="game-title">Flag and Landmark Millionaire</h1>
+            <div class="level-indicator" id="level-indicator"></div>
+            <div id="question"></div>
+            <img id="image" src="" alt="Question Image">
+            <div id="timer">Time left: 30s</div>
+            <div class="time-display" id="question-time">Time spent on this question: 0s</div>
+            <div class="time-display" id="total-time">Total time: 0s</div>
+            <div class="options-container">
+                <button class="option" id="optA" aria-label="Option A"></button>
+                <button class="option" id="optB" aria-label="Option B"></button>
+                <button class="option" id="optC" aria-label="Option C"></button>
+                <button class="option" id="optD" aria-label="Option D"></button>
+            </div>
+            <div id="score">Score: 0</div>
+            <div class="lifelines">
+                <button class="lifeline" id="fifty">50:50</button>
+                <button class="lifeline" id="audience">Ask Audience</button>
+                <button class="lifeline" id="phone">Phone a Friend</button>
+            </div>
+            <div id="audience-result"></div>
+            <div id="phone-result"></div>
+        </div>
+        
+        <div id="end-page">
+            <h1 id="end-title">Game Over</h1>
+            <div id="player-stats"></div>
+            <div id="final-score"></div>
+            <div id="game-message"></div>
+            <div id="name-input-section">
+                <input type="text" id="name-input" placeholder="Enter your name" maxlength="20">
+                <button id="submit-name">Submit</button>
+            </div>
+            <div id="high-scores"></div>
+            <button id="replay">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Translations (using Traditional Chinese for Hong Kong)
+        const translations = {
+            en: {
+                title: "Flag and Landmark Millionaire",
+                desc1: "Test your knowledge of flags and landmarks!",
+                desc2: "Answer questions correctly to climb the money ladder and win up to 1,000,000 points!",
+                startButton: "Start Game",
+                score: "Score",
+                timeLeft: "Time left",
+                fifty: "50:50",
+                audience: "Ask Audience",
+                phone: "Phone a Friend",
+                audienceResult: "Audience Poll",
+                friendSays: "Friend says",
+                gameOver: "Game Over",
+                finalScore: "Final Score",
+                replay: "Play Again",
+                highScores: "High Scores",
+                congratsMillion: "Congratulations! You've become a millionaire!",
+                outstanding: "Outstanding! You're a geography master!",
+                greatJob: "Great job! You're a geography expert!",
+                goodEffort: "Good effort! You know your geography!",
+                betterLuck: "Better luck next time! Keep learning about flags and landmarks!",
+                flagQuestion: "This is the flag of which country?",
+                landmarkQuestion: "The {name} is in which country/region?",
+                enterName: "Enter your name",
+                submit: "Submit",
+                questionTime: "Time spent on this question",
+                totalTime: "Total time",
+                averageTime: "Average time per question",
+                playerStats: "Player Statistics"
+            },
+            zh: {
+                title: "旗幟與地標百萬富翁",
+                desc1: "測試您對旗幟和地標的知識！",
+                desc2: "正確回答問題，攀登金錢階梯，贏得高達1,000,000積分！",
+                startButton: "開始遊戲",
+                score: "分數",
+                timeLeft: "剩餘時間",
+                fifty: "50:50",
+                audience: "詢問觀眾",
+                phone: "打電話給朋友",
+                audienceResult: "觀眾投票",
+                friendSays: "朋友說",
+                gameOver: "遊戲結束",
+                finalScore: "最終分數",
+                replay: "再玩一次",
+                highScores: "高分榜",
+                congratsMillion: "恭喜！您已成為百萬富翁！",
+                outstanding: "出色！您是地理大師！",
+                greatJob: "幹得好！您是地理專家！",
+                goodEffort: "努力不錯！您了解地理！",
+                betterLuck: "下次好運！繼續學習旗幟和地標！",
+                flagQuestion: "這是哪個國家的國旗？",
+                landmarkQuestion: "{name}位於哪個國家/地區？",
+                enterName: "輸入您的姓名",
+                submit: "提交",
+                questionTime: "本題用時",
+                totalTime: "總用時",
+                averageTime: "平均每題用時",
+                playerStats: "玩家統計"
+            }
+        };
+
+        // Country translations (Traditional Chinese)
+        const countryTranslations = {
+            "China": "中國",
+            "United States": "美國",
+            "United Kingdom": "英國",
+            "France": "法國",
+            "Germany": "德國",
+            "Japan": "日本",
+            "Canada": "加拿大",
+            "Australia": "澳洲",
+            "India": "印度",
+            "Brazil": "巴西",
+            "Russia": "俄羅斯",
+            "Mexico": "墨西哥",
+            "Italy": "意大利",
+            "Spain": "西班牙",
+            "South Korea": "韓國",
+            "South Africa": "南非",
+            "Egypt": "埃及",
+            "Turkey": "土耳其",
+            "Saudi Arabia": "沙特阿拉伯",
+            "Argentina": "阿根廷",
+            "Nigeria": "尼日利亞",
+            "Sweden": "瑞典",
+            "Norway": "挪威",
+            "Netherlands": "荷蘭",
+            "Switzerland": "瑞士",
+            "New Zealand": "紐西蘭",
+            "Indonesia": "印尼",
+            "Portugal": "葡萄牙",
+            "Greece": "希臘",
+            "Peru": "秘魯",
+            "United Arab Emirates": "阿拉伯聯合酋長國",
+            "Jordan": "約旦",
+            "Zambia": "贊比亞",
+            "Cambodia": "柬埔寨"
+        };
+
+        // Flags data
+        const flags = [
+            { country: "China", url: "https://flagcdn.com/w320/cn.png" },
+            { country: "United States", url: "https://flagcdn.com/w320/us.png" },
+            { country: "United Kingdom", url: "https://flagcdn.com/w320/gb.png" },
+            { country: "France", url: "https://flagcdn.com/w320/fr.png" },
+            { country: "Germany", url: "https://flagcdn.com/w320/de.png" },
+            { country: "Japan", url: "https://flagcdn.com/w320/jp.png" },
+            { country: "Canada", url: "https://flagcdn.com/w320/ca.png" },
+            { country: "Australia", url: "https://flagcdn.com/w320/au.png" },
+            { country: "India", url: "https://flagcdn.com/w320/in.png" },
+            { country: "Brazil", url: "https://flagcdn.com/w320/br.png" },
+            { country: "Russia", url: "https://flagcdn.com/w320/ru.png" },
+            { country: "Mexico", url: "https://flagcdn.com/w320/mx.png" },
+            { country: "Italy", url: "https://flagcdn.com/w320/it.png" },
+            { country: "Spain", url: "https://flagcdn.com/w320/es.png" },
+            { country: "South Korea", url: "https://flagcdn.com/w320/kr.png" },
+            { country: "South Africa", url: "https://flagcdn.com/w320/za.png" },
+            { country: "Egypt", url: "https://flagcdn.com/w320/eg.png" },
+            { country: "Turkey", url: "https://flagcdn.com/w320/tr.png" },
+            { country: "Saudi Arabia", url: "https://flagcdn.com/w320/sa.png" },
+            { country: "Argentina", url: "https://flagcdn.com/w320/ar.png" },
+            { country: "Nigeria", url: "https://flagcdn.com/w320/ng.png" },
+            { country: "Sweden", url: "https://flagcdn.com/w320/se.png" },
+            { country: "Norway", url: "https://flagcdn.com/w320/no.png" },
+            { country: "Netherlands", url: "https://flagcdn.com/w320/nl.png" },
+            { country: "Switzerland", url: "https://flagcdn.com/w320/ch.png" },
+            { country: "New Zealand", url: "https://flagcdn.com/w320/nz.png" },
+            { country: "Indonesia", url: "https://flagcdn.com/w320/id.png" },
+            { country: "Portugal", url: "https://flagcdn.com/w320/pt.png" },
+            { country: "Greece", url: "https://flagcdn.com/w320/gr.png" },
+            { country: "Peru", url: "https://flagcdn.com/w320/pe.png" },
+            { country: "United Arab Emirates", url: "https://flagcdn.com/w320/ae.png" },
+            { country: "Jordan", url: "https://flagcdn.com/w320/jo.png" },
+            { country: "Zambia", url: "https://flagcdn.com/w320/zm.png" },
+            { country: "Cambodia", url: "https://flagcdn.com/w320/kh.png" }
+        ];
+
+        // Landmarks data with updated URLs and Chinese names
+        const landmarks = [
+            { name: "Eiffel Tower", chineseName: "艾菲爾鐵塔", country: "France", url: "https://cdn.britannica.com/52/245552-050-3D7334F9/Eiffel-Tower-Paris.jpg?w=400&h=300&c=crop" },
+            { name: "Great Wall", chineseName: "長城", country: "China", url: "https://upload.wikimedia.org/wikipedia/commons/2/23/The_Great_Wall_of_China_at_Jinshanling-edit.jpg" },
+            { name: "Statue of Liberty", chineseName: "自由女神像", country: "United States", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Statue_of_Liberty%2C_NY.jpg/960px-Statue_of_Liberty%2C_NY.jpg" },
+            { name: "Big Ben", chineseName: "大笨鐘", country: "United Kingdom", url: "https://www.londonperfect.com/g/photos/upload/sml_302526596-1498570960-big-ben-westminster.jpg" },
+            { name: "Colosseum", chineseName: "羅馬鬥獸場", country: "Italy", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Colosseo_2020.jpg/1200px-Colosseo_2020.jpg" },
+            { name: "Taj Mahal", chineseName: "泰姬陵", country: "India", url: "https://upload.wikimedia.org/wikipedia/commons/1/1d/Taj_Mahal_%28Edited%29.jpeg" },
+            { name: "Sydney Opera House", chineseName: "雪梨歌劇院", country: "Australia", url: "https://upload.wikimedia.org/wikipedia/commons/a/a0/Sydney_Australia._%2821339175489%29.jpg" },
+            { name: "Pyramids of Giza", chineseName: "吉薩金字塔", country: "Egypt", url: "https://upload.wikimedia.org/wikipedia/commons/e/e7/Great_Pyramid_of_Giza_-_Pyramid_of_Khufu.jpg" },
+            { name: "Christ the Redeemer", chineseName: "救世基督像", country: "Brazil", url: "https://publisher-ncreg.s3.us-east-2.amazonaws.com/pb-ncregister/swp/hv9hms/media/20231122221124_45448c583eabca7ad6be347939c641312d4ce7570209ad29d3345175aea14fec.jpg" },
+            { name: "Kremlin", chineseName: "克里姆林宮", country: "Russia", url: "https://i.natgeofe.com/n/82720f1c-ab9e-4115-b7ea-9d2a4375b2c4/00000163-4640-d3e2-a1ff-564483af0000.jpg?wp=1&w=1884.75&h=1060.5" },
+            { name: "Machu Picchu", chineseName: "馬丘比丘", country: "Peru", url: "https://upload.wikimedia.org/wikipedia/commons/b/bb/Machu_Picchu%2C_2023_%28012%29.jpg" },
+            { name: "Burj Khalifa", chineseName: "哈利法塔", country: "United Arab Emirates", url: "https://cdn.twocontinents.com/cdn-cgi/image/width=3840/https://cdn.twocontinents.com/explore_the_burj_khalifa_the_world_s_tallest_building_7ea0a0ca6d.jpg" },
+            { name: "Mount Fuji", chineseName: "富士山", country: "Japan", url: "https://www.tripsavvy.com/thmb/qFqPcg6Wo24Hu4fLokNfAZdC-xQ=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/fuji-mountain-in-autumn-822273028-5a6a8a9c3418c600363958d3.jpg" },
+            { name: "Golden Gate Bridge", chineseName: "金門大橋", country: "United States", url: "https://images.fineartamerica.com/images/artworkimages/mediumlarge/3/iconic-golden-gate-bridge-in-san-francisco-pierre-leclerc-photography.jpg" },
+            { name: "Acropolis", chineseName: "雅典衛城", country: "Greece", url: "https://bucket-files.city-sightseeing.com/blog/2023/07/athens_parthenon.jpg" },
+            { name: "Great Sphinx", chineseName: "獅身人面像", country: "Egypt", url: "https://cdn.britannica.com/85/99185-050-E1110E5C/Great-Sphinx-Giza-Egypt.jpg" },
+            { name: "Stonehenge", chineseName: "巨石陣", country: "United Kingdom", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Stonehenge2007_07_30.jpg/1200px-Stonehenge2007_07_30.jpg" },
+            { name: "Niagara Falls", chineseName: "尼加拉瀑布", country: "Canada", url: "https://www.planetware.com/photos-large/CDN/canada-niagara-falls-horseshoe-falls.jpg" },
+            { name: "Mount Rushmore", chineseName: "拉什莫爾山", country: "United States", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Mount_Rushmore_detail_view_%28100MP%29.jpg/1200px-Mount_Rushmore_detail_view_%28100MP%29.jpg" },
+            { name: "Petra", chineseName: "佩特拉", country: "Jordan", url: "https://i.natgeofe.com/n/69e2cf60-ad59-4d20-bdd1-dc96f40ab4e8/petra-world-heritage-jordan.jpg" },
+            { name: "Grand Canyon", chineseName: "大峽谷", country: "United States", url: "https://npf-prod.imgix.net/uploads/shutterstock_97706066_1.jpg?auto=compress%2Cformat&crop=focalpoint&fit=crop&fp-x=0.5&fp-y=0.5&h=900&q=80&w=1600" },
+            { name: "Victoria Falls", chineseName: "維多利亞瀑布", country: "Zambia", url: "https://media.istockphoto.com/id/1081365424/photo/aerial-view-of-famous-victoria-falls-zimbabwe-and-zambia.jpg?s=612x612&w=0&k=20&c=-w7lj9taR2qyenSo_zjNQCacXZkXmKKhg0u7LjKpZqQ=" },
+            { name: "Table Mountain", chineseName: "桌山", country: "South Africa", url: "https://media.cntraveler.com/photos/5b742b191f8f5f5aacc37829/16:9/w_2560%2Cc_limit/Table-Mountain_GettyImages-103891332.jpg" },
+            { name: "Angkor Wat", chineseName: "吳哥窟", country: "Cambodia", url: "https://lp-cms-production.imgix.net/2025-01/Cambodia-Angkor-Wat-Waj-shutterstockRF312461543-crop.jpg?auto=format,compress&q=72&w=1440&h=810&fit=crop" },
+            { name: "Tokyo Tower", chineseName: "東京塔", country: "Japan", url: "https://res-4.cloudinary.com/jnto/image/upload/w_2064,h_1300,c_fill,f_auto,fl_lossy,q_auto/v1646014276/tokyo/H_00658_001" },
+            { name: "CN Tower", chineseName: "加拿大國家電視塔", country: "Canada", url: "https://media.cntraveler.com/photos/5b2c0684a98055277ea83e26/16:9/w_2560%2Cc_limit/CN-Tower_GettyImages-615764386.jpg" },
+            { name: "Neuschwanstein Castle", chineseName: "新天鵝堡", country: "Germany", url: "https://www.travelandleisure.com/thmb/umcoSMJygYyG5OIYDdBPgnrJGLc=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/01-neuschwanstein-castle-bavaria-NEUSCHWANSTEIN0417-273a040698f24fc1ac22e717bb3f1f0c.jpg" },
+            { name: "Sagrada Familia", chineseName: "聖家堂", country: "Spain", url: "https://cdn.britannica.com/15/194815-050-08B5E7D1/Nativity-facade-Sagrada-Familia-cathedral-Barcelona-Spain.jpg" },
+            { name: "Forbidden City", chineseName: "紫禁城", country: "China", url: "https://res.cloudinary.com/odysseytraveller/image/fetch/f_auto,q_auto,dpr_auto,r_4,w_765,h_535.5,c_limit/https://cdn.odysseytraveller.com/app/uploads/2019/12/GettyImages-504781659.jpg" },
+            { name: "Victoria Harbour", chineseName: "維多利亞港", country: "China", url: "https://www.discoverhongkong.com/content/dam/dhk/intl/explore/attractions/best-ways-to-marvel-at-iconic-victoria-harbour/best-ways-to-marvel-at-iconic-victoria-harbour-1920x1080.jpg" }
+        ];
+
+        // Game variables
+        const levels = [100, 200, 300, 500, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 125000, 250000, 500000, 1000000];
+        const milestones = [1000, 32000]; // Safety nets at $1,000 and $32,000
+        let currentLevel = 0;
+        let score = 0;
+        let correctAnswer = '';
+        let options = [];
+        let usedLifelines = { fifty: false, audience: false, phone: false };
+        let timerInterval;
+        let timeLeft = 30;
+        let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const HIGH_SCORE_KEY = 'flagLandmarkMillionaireHighScores';
+        let language = 'en';
+        
+        // New variables for time tracking and player name
+        let questionStartTime = 0;
+        let totalGameTime = 0;
+        let questionTimes = [];
+        let playerName = '';
+        
+        // Variables to track used questions
+        let usedFlagQuestions = [];
+        let usedLandmarkQuestions = [];
+
+        // Functions for sounds
+        function playCorrectSound() {
+            let oscillator = audioContext.createOscillator();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, audioContext.currentTime); // A5 note
+            oscillator.connect(audioContext.destination);
+            oscillator.start();
+            setTimeout(() => oscillator.stop(), 500);
+        }
+        function playWrongSound() {
+            let oscillator = audioContext.createOscillator();
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(220, audioContext.currentTime); // A3 note
+            oscillator.connect(audioContext.destination);
+            oscillator.start();
+            setTimeout(() => oscillator.stop(), 500);
+        }
+        function playLevelUpSound() {
+            let oscillator = audioContext.createOscillator();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5 note
+            oscillator.connect(audioContext.destination);
+            oscillator.start();
+            setTimeout(() => {
+                oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime); // E5 note
+            }, 200);
+            setTimeout(() => {
+                oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime); // G5 note
+                setTimeout(() => oscillator.stop(), 200);
+            }, 400);
+        }
+
+        // Set language texts
+        function setLanguage(lang) {
+            language = lang;
+            document.getElementById('title').textContent = translations[lang].title;
+            document.getElementById('desc1').textContent = translations[lang].desc1;
+            document.getElementById('desc2').textContent = translations[lang].desc2;
+            document.getElementById('start').textContent = translations[lang].startButton;
+            document.getElementById('game-title').textContent = translations[lang].title;
+            document.getElementById('fifty').textContent = translations[lang].fifty;
+            document.getElementById('audience').textContent = translations[lang].audience;
+            document.getElementById('phone').textContent = translations[lang].phone;
+            document.getElementById('end-title').textContent = translations[lang].gameOver;
+            document.getElementById('replay').textContent = translations[lang].replay;
+            document.getElementById('name-input').placeholder = translations[lang].enterName;
+            document.getElementById('submit-name').textContent = translations[lang].submit;
+            
+            // Update dynamic elements if needed
+            updateScore();
+            document.getElementById('timer').textContent = `${translations[lang].timeLeft}: ${timeLeft}s`;
+            document.getElementById('question-time').textContent = `${translations[lang].questionTime}: 0s`;
+            document.getElementById('total-time').textContent = `${translations[lang].totalTime}: 0s`;
+        }
+
+        // Start game
+        function startGame() {
+            const langSelect = document.getElementById('language');
+            setLanguage(langSelect.value);
+            document.getElementById('start-page').classList.remove('active');
+            document.getElementById('game-page').classList.add('active');
+            resetLifelines();
+            currentLevel = 0;
+            score = 0;
+            totalGameTime = 0;
+            questionTimes = [];
+            // Reset used questions
+            usedFlagQuestions = [];
+            usedLandmarkQuestions = [];
+            updateScore();
+            updateLevelIndicator();
+            generateQuestion();
+            startTimer();
+        }
+
+        // Generate question (with basic difficulty scaling: rarer items for higher levels)
+        function generateQuestion() {
+            const isFlag = Math.random() < 0.5;
+            let item, questionText;
+            let pool = isFlag ? flags : landmarks;
+            
+            // For higher levels, slice to rarer items (assume last half are rarer)
+            if (currentLevel > levels.length / 2) {
+                pool = pool.slice(pool.length / 2);
+            }
+            
+            // Filter out already used questions
+            let availableItems;
+            if (isFlag) {
+                availableItems = pool.filter(flag => !usedFlagQuestions.includes(flag.country));
+            } else {
+                availableItems = pool.filter(landmark => !usedLandmarkQuestions.includes(landmark.name));
+            }
+            
+            // If all questions have been used, reset the used questions for this category
+            if (availableItems.length === 0) {
+                if (isFlag) {
+                    usedFlagQuestions = [];
+                    availableItems = pool;
+                } else {
+                    usedLandmarkQuestions = [];
+                    availableItems = pool;
+                }
+            }
+            
+            // Select a random item from available ones
+            item = availableItems[Math.floor(Math.random() * availableItems.length)];
+            
+            // Mark this question as used
+            if (isFlag) {
+                usedFlagQuestions.push(item.country);
+            } else {
+                usedLandmarkQuestions.push(item.name);
+            }
+            
+            const itemName = isFlag ? '' : (language === 'en' ? item.name : item.chineseName);
+            questionText = isFlag ? translations[language].flagQuestion : translations[language].landmarkQuestion.replace('{name}', itemName);
+            document.getElementById('question').textContent = questionText;
+            document.getElementById('image').src = item.url;
+            document.getElementById('image').alt = `Image of ${isFlag ? 'flag' : itemName}`;
+            correctAnswer = language === 'en' ? item.country : countryTranslations[item.country];
+            
+            // Get all possible countries for wrong answers
+            let allPossibleCountries = isFlag ? 
+                flags.map(f => language === 'en' ? f.country : countryTranslations[f.country]) : 
+                landmarks.map(l => language === 'en' ? l.country : countryTranslations[l.country]);
+            
+            let countries = new Set(allPossibleCountries);
+            countries.delete(correctAnswer);
+            options = [correctAnswer];
+            countries = Array.from(countries);
+            
+            // Select 3 wrong answers
+            while (options.length < 4) {
+                const randomCountry = countries[Math.floor(Math.random() * countries.length)];
+                if (!options.includes(randomCountry)) options.push(randomCountry);
+            }
+            
+            options.sort(() => Math.random() - 0.5);
+            const opts = ['A', 'B', 'C', 'D'];
+            opts.forEach((letter, i) => {
+                const btn = document.getElementById(`opt${letter}`);
+                btn.textContent = `${letter}: ${options[i]}`;
+                btn.setAttribute('aria-label', `Option ${letter}: ${options[i]}`);
+            });
+            
+            enableOptions();
+            clearResults();
+            timeLeft = 30;
+            document.getElementById('timer').textContent = `${translations[language].timeLeft}: ${timeLeft}s`;
+            
+            // Start tracking time for this question
+            questionStartTime = Date.now();
+            updateTimeDisplay();
+        }
+
+        // Update time display during the game
+        function updateTimeDisplay() {
+            const currentQuestionTime = Math.floor((Date.now() - questionStartTime) / 1000);
+            document.getElementById('question-time').textContent = `${translations[language].questionTime}: ${currentQuestionTime}s`;
+            document.getElementById('total-time').textContent = `${translations[language].totalTime}: ${Math.floor(totalGameTime / 1000)}s`;
+        }
+
+        // Update score
+        function updateScore() {
+            document.getElementById('score').textContent = `${translations[language].score}: ${score}`;
+        }
+
+        // Update level indicator
+        function updateLevelIndicator() {
+            const indicator = document.getElementById('level-indicator');
+            indicator.innerHTML = '';
+            levels.forEach((level, index) => {
+                const levelElement = document.createElement('div');
+                levelElement.className = 'level';
+                if (index === currentLevel) {
+                    levelElement.classList.add('active');
+                } else if (index < currentLevel) {
+                    levelElement.classList.add('completed');
+                }
+                levelElement.textContent = index + 1;
+                indicator.appendChild(levelElement);
+            });
+        }
+
+        // Handle answer
+        function handleAnswer(selected) {
+            stopTimer();
+            disableOptions();
+            
+            // Calculate time taken for this question
+            const questionTime = Date.now() - questionStartTime;
+            totalGameTime += questionTime;
+            questionTimes.push(questionTime);
+            
+            // Update time display one last time
+            updateTimeDisplay();
+            
+            // Highlight correct and incorrect answers
+            document.querySelectorAll('.option').forEach((btn, index) => {
+                if (options[index] === correctAnswer) {
+                    btn.classList.add('correct');
+                } else if (options[index] === selected && selected !== correctAnswer) {
+                    btn.classList.add('incorrect');
+                }
+            });
+            if (selected === correctAnswer) {
+                playCorrectSound();
+                score = levels[currentLevel];
+                currentLevel++;
+                updateScore();
+                updateLevelIndicator();
+                if (currentLevel >= levels.length) {
+                    setTimeout(() => endGame(true), 1500);
+                } else {
+                    setTimeout(() => {
+                        playLevelUpSound();
+                        generateQuestion();
+                        startTimer();
+                    }, 1500);
+                }
+            } else {
+                playWrongSound();
+                setTimeout(() => endGame(false), 1500);
+            }
+        }
+
+        // End game
+        function endGame(isWin) {
+            stopTimer();
+            document.getElementById('game-page').classList.remove('active');
+            document.getElementById('end-page').classList.add('active');
+            if (!isWin) {
+                // Apply milestones
+                if (score >= milestones[1]) {
+                    score = milestones[1];
+                } else if (score >= milestones[0]) {
+                    score = milestones[0];
+                } else {
+                    score = 0;
+                }
+            }
+            
+            // Calculate average time per question
+            const averageTime = questionTimes.length > 0 ? 
+                Math.floor(totalGameTime / questionTimes.length / 1000) : 0;
+            
+            // Display player statistics
+            document.getElementById('player-stats').innerHTML = `
+                <h2>${translations[language].playerStats}</h2>
+                <p>${translations[language].totalTime}: ${Math.floor(totalGameTime / 1000)}s</p>
+                <p>${translations[language].averageTime}: ${averageTime}s</p>
+                <p>Questions answered: ${questionTimes.length}</p>
+            `;
+            
+            document.getElementById('final-score').textContent = `${translations[language].finalScore}: ${score}`;
+            let message = '';
+            if (isWin) {
+                message = translations[language].congratsMillion;
+            } else if (score >= 100000) {
+                message = translations[language].outstanding;
+            } else if (score >= 10000) {
+                message = translations[language].greatJob;
+            } else if (score >= 1000) {
+                message = translations[language].goodEffort;
+            } else {
+                message = translations[language].betterLuck;
+            }
+            document.getElementById('game-message').textContent = message;
+            
+            // Show name input for high score
+            document.getElementById('high-scores').innerHTML = '';
+            document.getElementById('name-input-section').style.display = 'block';
+        }
+
+        // High scores
+        function getHighScores() {
+            return JSON.parse(localStorage.getItem(HIGH_SCORE_KEY)) || [];
+        }
+        
+        function updateHighScores(name, newScore, totalTime) {
+            let scores = getHighScores();
+            scores.push({
+                name: name,
+                score: newScore,
+                time: totalTime,
+                date: new Date().toISOString()
+            });
+            scores.sort((a, b) => b.score - a.score);
+            scores = scores.slice(0, 10); // Top 10
+            localStorage.setItem(HIGH_SCORE_KEY, JSON.stringify(scores));
+            displayHighScores(scores);
+        }
+        
+        function displayHighScores(scores) {
+            const highScoresDiv = document.getElementById('high-scores');
+            highScoresDiv.innerHTML = `<h2>${translations[language].highScores}</h2>`;
+            
+            if (scores.length === 0) {
+                highScoresDiv.innerHTML += '<p>No high scores yet!</p>';
+                return;
+            }
+            
+            const ol = document.createElement('ol');
+            ol.style.textAlign = 'left';
+            ol.style.display = 'inline-block';
+            
+            scores.forEach(entry => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <strong>${entry.name}</strong> - ${entry.score} points<br>
+                    <small>Time: ${Math.floor(entry.time / 1000)}s | Date: ${new Date(entry.date).toLocaleDateString()}</small>
+                `;
+                ol.appendChild(li);
+            });
+            
+            highScoresDiv.appendChild(ol);
+        }
+
+        // Timer functions
+        function startTimer() {
+            timeLeft = 30;
+            document.getElementById('timer').textContent = `${translations[language].timeLeft}: ${timeLeft}s`;
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = `${translations[language].timeLeft}: ${timeLeft}s`;
+                updateTimeDisplay();
+                if (timeLeft <= 0) {
+                    stopTimer();
+                    playWrongSound();
+                    // Calculate time for this question when time runs out
+                    const questionTime = Date.now() - questionStartTime;
+                    totalGameTime += questionTime;
+                    questionTimes.push(questionTime);
+                    endGame(false);
+                }
+            }, 1000);
+        }
+        
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        // Reset lifelines
+        function resetLifelines() {
+            usedLifelines = { fifty: false, audience: false, phone: false };
+            document.querySelectorAll('.lifeline').forEach(btn => {
+                btn.classList.remove('used');
+                btn.textContent = translations[language][btn.id];
+            });
+        }
+
+        // Disable/enable options
+        function disableOptions() {
+            document.querySelectorAll('.option').forEach(btn => {
+                btn.classList.add('disabled');
+                btn.onclick = null;
+            });
+        }
+        
+        function enableOptions() {
+            const opts = ['A', 'B', 'C', 'D'];
+            opts.forEach((letter, i) => {
+                const btn = document.getElementById(`opt${letter}`);
+                btn.classList.remove('disabled', 'correct', 'incorrect');
+                btn.onclick = () => handleAnswer(options[i]);
+            });
+        }
+
+        // Clear lifeline results
+        function clearResults() {
+            document.getElementById('audience-result').textContent = '';
+            document.getElementById('phone-result').textContent = '';
+        }
+
+        // Lifeline: 50:50
+        function fiftyFifty() {
+            if (usedLifelines.fifty) return;
+            usedLifelines.fifty = true;
+            document.getElementById('fifty').classList.add('used');
+            let removed = 0;
+            while (removed < 2) {
+                const randIndex = Math.floor(Math.random() * 4);
+                if (options[randIndex] !== correctAnswer) {
+                    const letter = ['A', 'B', 'C', 'D'][randIndex];
+                    const btn = document.getElementById(`opt${letter}`);
+                    btn.textContent = `${letter}: `;
+                    btn.classList.add('disabled');
+                    btn.onclick = null;
+                    removed++;
+                }
+            }
+        }
+
+        // Lifeline: Ask Audience (handle after 50:50 by only using active options)
+        function askAudience() {
+            if (usedLifelines.audience) return;
+            usedLifelines.audience = true;
+            document.getElementById('audience').classList.add('used');
+            // Get active options (not disabled)
+            const activeIndices = [];
+            document.querySelectorAll('.option').forEach((btn, i) => {
+                if (!btn.classList.contains('disabled')) {
+                    activeIndices.push(i);
+                }
+            });
+            const percentages = new Array(4).fill(0);
+            const correctIndex = options.indexOf(correctAnswer);
+            percentages[correctIndex] = 70 + Math.floor(Math.random() * 20); // 70-90%
+            let remaining = 100 - percentages[correctIndex];
+            const activeNonCorrect = activeIndices.filter(i => i !== correctIndex);
+            for (let i of activeNonCorrect) {
+                percentages[i] = Math.floor(Math.random() * remaining);
+                remaining -= percentages[i];
+            }
+            // Add any leftover to a random active non-correct
+            if (activeNonCorrect.length > 0) {
+                percentages[activeNonCorrect[activeNonCorrect.length - 1]] += remaining;
+            }
+            let result = `${translations[language].audienceResult}:<br>`;
+            ['A', 'B', 'C', 'D'].forEach((letter, i) => {
+                if (activeIndices.includes(i)) {
+                    result += `${letter}: ${percentages[i]}%<br>`;
+                }
+            });
+            document.getElementById('audience-result').innerHTML = result;
+        }
+
+        // Lifeline: Phone a Friend (varied responses, sometimes wrong)
+        function phoneFriend() {
+            if (usedLifelines.phone) return;
+            usedLifelines.phone = true;
+            document.getElementById('phone').classList.add('used');
+            let hint;
+            const rand = Math.random();
+            if (rand < 0.7) {
+                hint = `${translations[language].friendSays}: I think it's ${correctAnswer}.`;
+            } else if (rand < 0.9) {
+                // Suggest a wrong answer
+                let wrongOptions = options.filter(opt => opt !== correctAnswer);
+                hint = `${translations[language].friendSays}: I think it's ${wrongOptions[Math.floor(Math.random() * wrongOptions.length)]}.`;
+            } else {
+                hint = `${translations[language].friendSays}: I'm not sure, maybe try another lifeline.`;
+            }
+            document.getElementById('phone-result').textContent = hint;
+        }
+
+        // Handle name submission
+        function submitName() {
+            const nameInput = document.getElementById('name-input');
+            playerName = nameInput.value.trim();
+            
+            if (playerName === '') {
+                playerName = 'Anonymous Player';
+            }
+            
+            // Hide name input section
+            document.getElementById('name-input-section').style.display = 'none';
+            
+            // Update high scores with player name
+            updateHighScores(playerName, score, totalGameTime);
+        }
+
+        // Event listeners
+        document.getElementById('start').onclick = startGame;
+        document.getElementById('replay').onclick = () => {
+            document.getElementById('end-page').classList.remove('active');
+            document.getElementById('start-page').classList.add('active');
+            setLanguage('en'); // Reset to English
+        };
+        document.getElementById('fifty').onclick = fiftyFifty;
+        document.getElementById('audience').onclick = askAudience;
+        document.getElementById('phone').onclick = phoneFriend;
+        document.getElementById('language').onchange = (e) => setLanguage(e.target.value);
+        document.getElementById('submit-name').onclick = submitName;
+        document.getElementById('name-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                submitName();
+            }
+        });
+    </script>
+</body>
+</html>
